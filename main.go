@@ -30,7 +30,7 @@ func GetApp() *Server {
 }
 
 func catchAllHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("<h1>Hello World!</h1>"))
+	http.NotFound(w, r)
 }
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
