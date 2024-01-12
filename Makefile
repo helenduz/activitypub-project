@@ -1,5 +1,5 @@
 all:
-	go build -o ./server ./cmd/server
+	go build
 
 clean:
 	rm -fv server
