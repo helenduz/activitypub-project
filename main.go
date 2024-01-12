@@ -7,7 +7,8 @@ import (
 	"net/http"
 	"os"
 
-	utils "ap-server/pkg/middlewares"
+	handlers "ap-server/pkg/handlers"
+	middlewares "ap-server/pkg/middlewares"
 
 	_ "github.com/mattn/go-sqlite3" // blank import for db initialization
 
@@ -16,6 +17,17 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 )
+
+// expose server resources to packages
+type Server struct {
+    DB *sql.DB
+	Domain string
+	Port string
+}
+var App *Server
+func GetApp() *Server {
+	return App
+}
 
 func catchAllHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("<h1>Hello World!</h1>"))
@@ -61,6 +73,13 @@ func main() {
 	db := dbSetUp()
 	defer db.Close()
 
+	// register server resources
+	App = &Server {
+		DB: db,
+		Domain: os.Getenv("DOMAIN"),
+		Port: port,
+	}
+
 	// set up routes
 	// main router
 	r := mux.NewRouter()
@@ -85,8 +104,8 @@ func main() {
     })
 	adminSubrouter := r.PathPrefix("/api/admin").Subrouter()
 	adminSubrouter.Use(credentialCors.Handler)
-	adminSubrouter.Use(utils.BasicAuthMiddleware)
-	adminSubrouter.HandleFunc("/create", testHandler)
+	adminSubrouter.Use(middlewares.BasicAuthMiddleware)
+	adminSubrouter.HandleFunc("/create", handlers.CreateHandler).Methods("POST")
 
 	// catch-all route
 	r.PathPrefix("/").HandlerFunc(catchAllHandler)
