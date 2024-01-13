@@ -74,8 +74,9 @@ func main() {
 	r.Handle("/admin/", http.StripPrefix("/admin/", fs))
 	// @@ subrouters/routes with default cors (webfinger, /u, /m, /api/inbox, /api/send)
 	defaultCors := cors.Default().Handler
-	webfingerSubrouter := r.PathPrefix("/.well-known/webfinger/").Subrouter()
+	webfingerSubrouter := r.PathPrefix("/.well-known/webfinger").Subrouter()
 	webfingerSubrouter.Use(defaultCors)
+	webfingerSubrouter.PathPrefix("").HandlerFunc(handlers.WebfingerHandler).Methods("GET")
 
 	// credentials cors + http authorizer subroute (/api/admin)
 	// set up http authorizer
