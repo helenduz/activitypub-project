@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	app "ap-server/pkg/app"
 	handlers "ap-server/pkg/handlers"
 	middlewares "ap-server/pkg/middlewares"
 
@@ -17,17 +18,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 )
-
-// expose server resources to packages
-type Server struct {
-    DB *sql.DB
-	Domain string
-	Port string
-}
-var App *Server
-func GetApp() *Server {
-	return App
-}
 
 func catchAllHandler(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
@@ -73,12 +63,8 @@ func main() {
 	db := dbSetUp()
 	defer db.Close()
 
-	// register server resources
-	App = &Server {
-		DB: db,
-		Domain: os.Getenv("DOMAIN"),
-		Port: port,
-	}
+	// register server resources so packages can access them
+	app.InitApp(db, os.Getenv("DOMAIN"), os.Getenv("PORT"))
 
 	// set up routes
 	// main router
