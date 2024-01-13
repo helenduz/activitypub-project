@@ -23,3 +23,6 @@ go.work
 .env
 .DS_Store
 ap-server
+*.db
+tmp
+*.md
