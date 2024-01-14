@@ -36,8 +36,8 @@ func handleErr(err error, w http.ResponseWriter, name string) {
 	if err == sql.ErrNoRows {
 		http.Error(w, fmt.Sprintf("No record found for %s", name), http.StatusNotFound)
 	} else {
-		log.Printf("Error in getting webfinger record for account %s", name)
+		log.Printf("Error in getting record for account %s", name)
 		log.Println(err)
-		http.Error(w, "Error in getting webfinger record", http.StatusInternalServerError)
+		http.Error(w, "Error in getting record", http.StatusInternalServerError)
 	}
 }

@@ -68,15 +68,26 @@ func main() {
 
 	// set up routes
 	// main router
-	r := mux.NewRouter()
+	r := mux.NewRouter().StrictSlash(true)
 	// home page route
 	fs := http.FileServer(http.Dir("static"))
 	r.Handle("/admin/", http.StripPrefix("/admin/", fs))
-	// @@ subrouters/routes with default cors (webfinger, /u, /m, /api/inbox, /api/send)
+
 	defaultCors := cors.Default().Handler
+
+	// webfinger route
 	webfingerSubrouter := r.PathPrefix("/.well-known/webfinger").Subrouter()
 	webfingerSubrouter.Use(defaultCors)
 	webfingerSubrouter.PathPrefix("").HandlerFunc(handlers.WebfingerHandler).Methods("GET")
+
+	// /u routes
+	userSubrouter := r.PathPrefix("/u").Subrouter()
+	userSubrouter.Use(defaultCors)
+	userSubrouter.HandleFunc("/{name}", handlers.UserNameHandler)
+
+	// inbox route /api/inbox
+
+	// send msg route /api/send
 
 	// credentials cors + http authorizer subroute (/api/admin)
 	// set up http authorizer
