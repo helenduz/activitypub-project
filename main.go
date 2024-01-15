@@ -83,6 +83,7 @@ func main() {
 	// /u routes
 	userSubrouter := r.PathPrefix("/u").Subrouter()
 	userSubrouter.Use(defaultCors)
+	userSubrouter.HandleFunc("/{name}/followers", handlers.UserFollowersHandler)
 	userSubrouter.HandleFunc("/{name}", handlers.UserNameHandler)
 
 	// inbox route /api/inbox
