@@ -91,7 +91,10 @@ func main() {
 	inboxSubrouter.Use(defaultCors)
 	inboxSubrouter.PathPrefix("").HandlerFunc(handlers.InboxHandler).Methods("POST")
 
-	// send msg route /api/send
+	// send msg route
+	sendSubrouter := r.PathPrefix("/api/send").Subrouter()
+	sendSubrouter.Use(defaultCors)
+	sendSubrouter.PathPrefix("").HandlerFunc(handlers.SendHandler).Methods("POST")
 
 	// credentials cors + http authorizer subroute (/api/admin)
 	// set up http authorizer

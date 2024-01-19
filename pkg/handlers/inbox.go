@@ -49,7 +49,15 @@ func InboxHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	// send accept message
-	sendAcceptMsg(w, followObj, myName, myDomain)
+	oppInbox := followObj.Actor + "/inbox"
+	actorUrl, _ := url.Parse(followObj.Actor)
+	oppDomain := actorUrl.Hostname()
+	acceptObj := getAcceptObj(myName, myDomain, followObj)
+	acceptJSONStr, err := json.Marshal(acceptObj)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	signAndSendMsg(w, oppInbox, oppDomain, acceptJSONStr, myName, myDomain)
 
 	// update followers in db
 	followers := getFollowers(w, myName)
@@ -84,11 +92,8 @@ func checkUserExists(name string) error {
 }
 
 
-func sendAcceptMsg(w http.ResponseWriter, followObj FollowActivity, myName string, myDomain string) {
+func signAndSendMsg(w http.ResponseWriter, oppInbox string, oppDomain string, msgJSONStr []byte, myName string, myDomain string) {
 	// getting info we need
-	oppInbox := followObj.Actor + "/inbox"
-	actorUrl, _ := url.Parse(followObj.Actor)
-	oppDomain := actorUrl.Hostname()
 	oppInboxFragment := strings.Replace(oppInbox, "https://" + oppDomain, "", 1)
 	privKey, err := getPrivKey(myName)
 	if err != nil {
@@ -96,20 +101,14 @@ func sendAcceptMsg(w http.ResponseWriter, followObj FollowActivity, myName strin
 		return
 	}
 	privKeyRSA := parsePrivKeyPEM([]byte(privKey))
-	acceptObj := getAcceptObj(myName, myDomain, followObj)
 
 	// create digest hash (hash json of message->encode to base 64)
-	msgJSONStr, err := json.Marshal(acceptObj)
-	if err != nil {
-		log.Fatalln(err)
-	}
 	hashedMsg := sha256.Sum256(msgJSONStr)
 	digestHash := base64.StdEncoding.EncodeToString(hashedMsg[:])
 
 	// prepare the string to sign
 	d := time.Now().UTC().Format(http.TimeFormat)
 	stringToSign := fmt.Sprintf("(request-target): post %s\nhost: %s\ndate: %s\ndigest: SHA-256=%s", oppInboxFragment, oppDomain, d, digestHash)
-	fmt.Println("STRING TO SIGN: ",stringToSign)
 
 	// signing the overall string (hash->sign with privKey->encode to base 64)
 	hashedStringToSign := sha256.Sum256([]byte(stringToSign))
@@ -192,7 +191,7 @@ func sendToHTTP(oppInbox string, oppDomain string, d string, digestHash string, 
 	}
     defer resp.Body.Close()
     body, _ := io.ReadAll(resp.Body)
-    fmt.Printf("Response to sending accept msg: STATUS %s, BODY %s\n", resp.Status, string(body))
+    fmt.Printf("Response to sending msg: STATUS %s, BODY %s\n", resp.Status, string(body))
 }
 
 
