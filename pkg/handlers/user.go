@@ -43,24 +43,10 @@ func UserFollowersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db := app.App.DB
-	domain := app.App.Domain
 	// get the followers from db
 	// in db, followers is stored as a JSON string of the list of each follower's username, need to convert it to a followersCollection for response
-	dbName := fmt.Sprintf("%s@%s", name, domain)
-	row := db.QueryRow("SELECT followers FROM accounts WHERE name = ?", dbName)
-	
-	var followersJSONStr []byte
-	err := row.Scan(&followersJSONStr)
-	if err != nil { // handles no record found as well
-		handleErr(err, w, name) // defined in webfinger.go
-		return
-	}
-	var followers []string
-    json.Unmarshal(followersJSONStr, &followers)
-	if len(string(followersJSONStr)) == 0 {
-		followers = make([]string, 0)
-	} // deal with case where followers row is NULL/not initialized (new account)
+	followers := getFollowers(w, name)
+	domain := app.App.Domain
 	followersCollectionObj := getFollowersCollectionObj(name, domain, followers)
 
 	// send result
@@ -68,6 +54,27 @@ func UserFollowersHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(followersCollectionObj)
 
+}
+
+
+func getFollowers(w http.ResponseWriter, name string) []string {
+	db := app.App.DB
+	domain := app.App.Domain
+	dbName := fmt.Sprintf("%s@%s", name, domain)
+	row := db.QueryRow("SELECT followers FROM accounts WHERE name = ?", dbName)
+	
+	var followersJSONStr []byte
+	err := row.Scan(&followersJSONStr)
+	if err != nil { // handles no record found as well
+		handleErr(err, w, name) // defined in webfinger.go
+		return nil
+	}
+	var followers []string
+    json.Unmarshal(followersJSONStr, &followers)
+	if len(string(followersJSONStr)) == 0 {
+		followers = make([]string, 0)
+	} // deal with case where followers row is NULL/not initialized (new account)
+	return followers
 }
 
 

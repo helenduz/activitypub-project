@@ -83,10 +83,13 @@ func main() {
 	// /u routes
 	userSubrouter := r.PathPrefix("/u").Subrouter()
 	userSubrouter.Use(defaultCors)
-	userSubrouter.HandleFunc("/{name}/followers", handlers.UserFollowersHandler)
-	userSubrouter.HandleFunc("/{name}", handlers.UserNameHandler)
+	userSubrouter.HandleFunc("/{name}/followers", handlers.UserFollowersHandler).Methods("GET")
+	userSubrouter.HandleFunc("/{name}", handlers.UserNameHandler).Methods("GET")
 
-	// inbox route /api/inbox
+	// inbox route
+	inboxSubrouter := r.PathPrefix("/api/inbox").Subrouter()
+	inboxSubrouter.Use(defaultCors)
+	inboxSubrouter.PathPrefix("").HandlerFunc(handlers.InboxHandler).Methods("POST")
 
 	// send msg route /api/send
 
