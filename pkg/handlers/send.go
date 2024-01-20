@@ -27,6 +27,11 @@ func SendHandler(w http.ResponseWriter, r *http.Request) {
 
 	// send message to all followers and add to messages database
 	sendMessageToFollowers(msg, name, w)
+
+	// respond
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"msg": "ok"})
 }
 
 
@@ -79,7 +84,6 @@ func sendMessageToFollowers(msg string, name string, w http.ResponseWriter) {
 		oppDomain := actorUrl.Hostname()
 		signAndSendMsg(w, oppInbox, oppDomain, createJSONStr, name, app.App.Domain)
 	}
-	// respond with 200 (done automatically)
 }
 
 
