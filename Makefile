@@ -2,4 +2,4 @@ all:
 	go build
 
 clean:
-	rm -fv server
+	rm -fv ap-server
