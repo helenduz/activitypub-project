@@ -24,6 +24,8 @@ Run the server with `make`, or `go build`, or any other methods you like (tip: u
 
 If you are running the server locally (in which case you will only be able to test the account creation functionality), you can pick anything for DOMAIN. If you are testing using reverse proxies like [ngrok](https://ngrok.com/), what you need to do is to (1) install ngrok (2) run `ngrok http 3000` (if you run your server on port 3000), which will give you a testing domain (3) update your `.env` file and make DOMAIN the testing domain you get from ngrok (4) restart your server. 
 
+You can test the functionalities with any HTTP client, but you can also use the admin page to do so easily! Just navigate to the `/admin` endpoint once your server is running, and you can create accounts and send messages on there.
+
 Note that the database gets erased when you restart your server.
 
 ## Repo Structure
